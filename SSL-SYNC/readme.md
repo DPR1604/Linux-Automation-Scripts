@@ -5,8 +5,22 @@
 
 Each server that is running a service also runs certbot to retrive a free SSL Certificate to secure the connection to application the previous solution was generateing a wildcard certicate for each server to cover multiple subdomains per server. The request was to centralize this from the management servers by requesting one wildcard certicate per doamin and sync that accross the estate of servers. 
 
+#### Problems to consider
+
+The security of the servers.
+
+The security of the private key.
+
+Securly transferring the files 
+
 #### Solution
 
-There were a couple of problems to consider the primary problems being maintaining the security of the servers and the SSL certificate's private key.
+Below is the entire process the solution runs from start to finish.
 
-The solution I created was to use a seperate user (certsync) to transfer the certificate files from the management server to the node servers the user esentially exsists to run a single rsync command, this was chosen because root access has been locked down so the ability to log into root via ssh is not possible 
+Certbot runs on the management server to pull a new wildcard certificate from letsencrypt, upon a successful renewal certbot runs a post-hook that calls the ssl-sync.sh script this then creates a copy of the certificate from the letsencrypt live directory to certsync/live, this is done because the live files a symlinked form the archive folder, creating a copy removes the risk of causing issue with certbot.
+
+Once a copy of the certificate has been created the script will then read the list of servers from the respective config file and run a rsync command to each server in the list that copies the certicate files to /certsync/live/ on each node.
+
+A cron is then run once a day on each node to run the ssl-sync-node.sh script this script moves the cert files from the /certsync/live to the letsencrypt live folder and restarts the nginx service furture interations will allow the service that is restarted to be customized.
+
+Puppet is used to manage the cron jobs and user/user key on the node servers this allows changes to be centrally controled by the management server.
