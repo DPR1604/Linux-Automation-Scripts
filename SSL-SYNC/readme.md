@@ -24,3 +24,7 @@ Once a copy of the certificate has been created the script will then read the li
 A cron is then run once a day on each node to run the ssl-sync-node.sh script this script moves the cert files from the /certsync/live to the letsencrypt live folder and restarts the nginx service furture interations will allow the service that is restarted to be customized.
 
 Puppet is used to manage the cron jobs and user/user key on the node servers this allows changes to be centrally controled by the management server.
+
+#### Config
+
+Both scripts rely on a config file that is called each time the script is run for ssl-sync.sh each certificate that needs to be synced has it own file this is just a list of servers to sync the certicates to, each server ip/hostname should be on it's own line, as for ss-sync-node.sh this is a list of certicates to check /certsync/live for, the name of the file can be anything as this it is a variable when running the command.
